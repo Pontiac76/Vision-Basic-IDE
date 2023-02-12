@@ -1,3 +1,4 @@
 *.exe
 backup
 lib
+.vscode
