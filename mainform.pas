@@ -202,57 +202,77 @@ begin
     end;
     TopLine := BasicOutput.TopLine;
     BasicCode.Text := CreateLabels(BasicCode);
-    BasicOutput.Text := BasicCode.Text+CRLF;
+    BasicOutput.Text := BasicCode.Text + CRLF;
     BasicOutput.TopLine := TopLine;
     BasicCode.Free;
   end;
 end;
 
 
-function ConvertStringListToKeyValue(Strings: TStringList): TStringList;
+function ConvertStringListToKeyValue (Strings: TStringList): TStringList;
 var
-  i: Integer;
+  i: integer;
   Line: string;
-  SpacePos: Integer;
-  sl:tstringlist;
+  SpacePos: integer;
+  sl: TStringList;
 begin
-  sl:=TStringList.create;
+  sl := TStringList.Create;
   Result := sl;
-  for i := 0 to Strings.Count - 1 do
-  begin
+  for i := 0 to Strings.Count - 1 do begin
     Line := Strings[i];
     SpacePos := Pos(' ', Line);
-    if SpacePos > 0 then
-    begin
+    if SpacePos > 0 then begin
       Line := Copy(Line, 1, SpacePos - 1) + '=' + Copy(Line, SpacePos + 1, Length(Line));
       Result.Add(Line);
     end;
   end;
 end;
 
-function CompareListings(LineNumbers: TList; Listing1KeyValue, Listing2KeyValue: TStringList): TStringList;
+function CompareListings (LineNumbers: TList; Listing1KeyValue, Listing2KeyValue: TStringList): TStringList;
 var
-  i: Integer;
-  LineNumber: Integer;
+  i: integer;
+  LineNumber: integer;
   Line1, Line2: string;
 begin
   Result := TStringList.Create;
-  for i := 0 to LineNumbers.Count - 1 do
-  begin
-    LineNumber := Integer(LineNumbers[i]);
+  for i := 0 to LineNumbers.Count - 1 do begin
+    LineNumber := integer(LineNumbers[i]);
     Line1 := Listing1KeyValue.Values[IntToStr(LineNumber)];
     Line2 := Listing2KeyValue.Values[IntToStr(LineNumber)];
-    if Line2 = '' then
-    begin
-      if Line1 = '' then
-        Continue
-      else
+    if Line2 = '' then begin
+      if Line1 = '' then begin
+        Continue;
+      end else begin
         Result.Add(IntToStr(LineNumber));
-    end
-    else
-    begin
-      if Line1 <> Line2 then
+      end;
+    end else begin
+      if Line1 <> Line2 then begin
         Result.Add(IntToStr(LineNumber) + ' ' + Line2);
+      end;
+    end;
+  end;
+end;
+
+
+procedure ExtractLineNumbers (var inLineNumber: TList; var ProgramListing: TStringList);
+var
+  i: integer;
+  Line: string;
+  LineNumberStr: string;
+  LineNumber: integer;
+begin
+  // Extract line numbers from Listing1 and Listing2
+  // and put them in a tList for
+  for i := 0 to ProgramListing.Count - 1 do begin
+    Line := ProgramListing[i];
+    // Extract the line number from the current line of code
+    LineNumberStr := Copy(Line, 1, Pos(' ', Line) - 1);
+    if (LineNumberStr <> '') then begin
+      LineNumber := StrToInt(LineNumberStr);
+      // Add the line number to the TList if it doesn't exist
+      if inLineNumber.IndexOf(Pointer(LineNumber)) = -1 then begin
+        inLineNumber.Add(Pointer(LineNumber));
+      end;
     end;
   end;
 end;
@@ -261,53 +281,48 @@ procedure TForm1.TheCodeKeyDown (Sender: TObject; var Key: word; Shift: TShiftSt
 var
   Listing1, Listing2: TStringList;
   LineNumbers: TList;
-  i, LineNumber: integer;
-  Line, LineNumberStr: string;
-  Listing1KeyValue,Listing2KeyValue:TStringList;
-  DiffCode:TStringList;
+  Listing1KeyValue, Listing2KeyValue: TStringList;
+  DiffCode: TStringList;
 
 begin
   if (ssCtrl in Shift) and (Key = 186) then begin // 186=Semicolon
+    // Create the containing variables
     TheCode.Modified := True;
     TheCodeChange(nil);
     Listing1 := TStringList.Create;
     Listing2 := TStringList.Create;
     LineNumbers := TList.Create;
 
+    // Populate the variables with what is on screen
+    { #todo : Change the following so that it pulls from historical records, not on screen records }
     Listing1.Text := LastUpdate.Text;
     Listing2.Text := BasicOutput.Text;
     LastUpdate.Text := BasicOutput.Text;
 
-    // Extract line numbers from Listing1 and Listing2
-    for i := 0 to Listing1.Count - 1 do begin
-      Line := Listing1[i];
-      // Extract the line number from the current line of code
-      LineNumberStr := Copy(Line, 1, Pos(' ', Line) - 1);
-      LineNumber := StrToInt(LineNumberStr);
-      // Add the line number to the TList if it doesn't exist
-      if LineNumbers.IndexOf(Pointer(LineNumber)) = -1 then begin
-        LineNumbers.Add(Pointer(LineNumber));
-      end;
-    end;
+    // Get the LineNumbers from both recently generated code and previously generated code.
+    ExtractLineNumbers(LineNumbers, Listing1);
+    ExtractLineNumbers(LineNumbers, Listing2);
 
-    for i := 0 to Listing2.Count - 1 do begin
-      Line := Listing2[i];
-      // Extract the line number from the current line of code
-      LineNumberStr := Copy(Line, 1, Pos(' ', Line) - 1);
-      LineNumber := StrToInt(LineNumberStr);
-      // Add the line number to the TList if it doesn't exist
-      if LineNumbers.IndexOf(Pointer(LineNumber)) = -1 then begin
-        LineNumbers.Add(Pointer(LineNumber));
-      end;
-    end;
-    Listing1KeyValue:=ConvertStringListToKeyValue(Listing1);
-    Listing2KeyValue:=ConvertStringListToKeyValue(Listing2);
+    // Take the two listings and convert the lines to key/value pairs
+    Listing1KeyValue := ConvertStringListToKeyValue(Listing1);
+    Listing2KeyValue := ConvertStringListToKeyValue(Listing2);
+
+    // Run the difference check between the code
     DiffCode := CompareListings(LineNumbers, Listing1KeyValue, Listing2KeyValue);
-    DeltaBasic.Text:=DiffCode.Text;
+
+    // Put the difference on the UI (There's no saving of this code)
+    DeltaBasic.Text := DiffCode.Text;
+
+    // Clen things up
     Listing2KeyValue.Free;
     Listing1KeyValue.Free;
-    DiffCode.free;
+    DiffCode.Free;
+
+    // Set the previous version of code to the currently generated code.
     LastUpdate.Text := BasicOutput.Text;
+
+    { #todo: Instead of keeping tabs on just the previously generated code, an enhancement will be to allow selecting
+             any version of previously generated code to do a compare against}
   end;
 
 end;
@@ -427,5 +442,6 @@ begin
 end;
 
 initialization
+
 finalization
 end.
