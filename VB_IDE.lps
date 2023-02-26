@@ -9,7 +9,7 @@
         <Filename Value="VB_IDE.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <CursorPos Y="22"/>
+        <CursorPos X="18" Y="13"/>
         <UsageCount Value="335"/>
       </Unit>
       <Unit>
@@ -20,134 +20,249 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainForm"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="269"/>
-        <CursorPos Y="284"/>
-        <FoldState Value=" T3iI03 T0keu23R"/>
+        <TopLine Value="329"/>
+        <CursorPos Y="363"/>
         <UsageCount Value="335"/>
+        <Bookmarks Count="1">
+          <Item0 X="3" Y="173"/>
+        </Bookmarks>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="simplesqlite3.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SimpleSQLite3"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="7"/>
+        <CursorPos Y="40"/>
+        <UsageCount Value="85"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\fcl-db\src\sqldb\sqldb.pp"/>
+        <UnitName Value="SQLDB"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="14" Y="256"/>
+        <UsageCount Value="5"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\fcl-db\src\sqlite\sqlite3ds.pas"/>
+        <UnitName Value="SQLite3DS"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="4"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\sqlite\src\sqlite3db.pas"/>
+        <UnitName Value="SQLite3DB"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="56"/>
+        <CursorPos Y="56"/>
+        <UsageCount Value="4"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\fcl-db\src\sqldb\sqlite\sqlite3conn.pp"/>
+        <UnitName Value="SQLite3Conn"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="41" Y="33"/>
+        <UsageCount Value="4"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\sqlite\src\sqlite3ext.pp"/>
+        <UnitName Value="SQLite3Ext"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="4"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\sqlite\src\sqlite3dyn.pp"/>
+        <UnitName Value="SQLite3Dyn"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="11" Y="5"/>
+        <UsageCount Value="4"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\sqlite\src\sqlite3.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1405"/>
+        <UsageCount Value="4"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\fpc\3.2.2\source\packages\fcl-db\src\sqldb\sqlite\sqlite3backup.pas"/>
+        <UnitName Value="SQLite3Backup"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="29"/>
+        <CursorPos Y="29"/>
+        <UsageCount Value="7"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\lcl\include\menuitem.inc"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="269"/>
+        <CursorPos Y="296"/>
+        <UsageCount Value="34"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\lcl\include\customform.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="894"/>
+        <CursorPos Y="922"/>
+        <UsageCount Value="23"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\components\synedit\synedit.pp"/>
+        <UnitName Value="SynEdit"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="7674"/>
+        <CursorPos X="68" Y="7703"/>
+        <UsageCount Value="33"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\lcl\include\application.inc"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="1237"/>
+        <CursorPos Y="1264"/>
+        <UsageCount Value="35"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\lcl\interfaces\win32\win32callback.inc"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="2747"/>
+        <CursorPos Y="2774"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\lazarus\lcl\interfaces\win32\win32wsforms.pp"/>
+        <UnitName Value="Win32WSForms"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="371"/>
+        <CursorPos Y="397"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
       </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="186" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="187" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="188" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="195" Column="49" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="183" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="184" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="185" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="186" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="189" Column="9" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="184" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="185" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="186" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="187" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="188" Column="5" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="184" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="188" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="189" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="190" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="184" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="189" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="190" Column="18" TopLine="155"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="188" Column="31" TopLine="161"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="189" TopLine="161"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="190" TopLine="161"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="296" TopLine="263"/>
+        <Caret Line="191" TopLine="161"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="285" Column="22" TopLine="263"/>
+        <Caret Line="188" Column="26" TopLine="161"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="132" Column="55" TopLine="116"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="295" Column="23" TopLine="263"/>
+        <Caret Line="173" Column="12" TopLine="127"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="297" TopLine="263"/>
+        <Caret Line="186" Column="16" TopLine="140"/>
       </Position>
       <Position>
         <Filename Value="mainform.pas"/>
-        <Caret Line="298" TopLine="263"/>
+        <Caret Line="300" Column="14" TopLine="294"/>
       </Position>
     </JumpHistory>
     <RunParams>
@@ -158,10 +273,22 @@
   <Debugging>
     <Watches>
       <Item>
-        <Expression Value="CurLine"/>
+        <Expression Value="vi"/>
       </Item>
       <Item>
-        <Expression Value="LineNumberStr"/>
+        <Expression Value="cy"/>
+      </Item>
+      <Item>
+        <Expression Value="gc"/>
+      </Item>
+      <Item>
+        <Expression Value="vs"/>
+      </Item>
+      <Item>
+        <Expression Value="r"/>
+      </Item>
+      <Item>
+        <Expression Value="gv"/>
       </Item>
     </Watches>
   </Debugging>

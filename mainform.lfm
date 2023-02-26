@@ -2,10 +2,10 @@ object Form1: TForm1
   Left = -1745
   Height = 935
   Top = 0
-  Width = 1736
+  Width = 1294
   Caption = 'Form1'
   ClientHeight = 915
-  ClientWidth = 1736
+  ClientWidth = 1294
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -26,6 +26,10 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 0
     OnKeyDown = TheCodeKeyDown
+    OnKeyPress = TheCodeKeyPress
+    OnMouseUp = TheCodeMouseUp
+    OnMouseWheel = TheCodeMouseWheel
+    ExtraLineSpacing = -1
     Gutter.Color = clBlack
     Gutter.Width = 81
     Gutter.MouseActions = <>
@@ -501,6 +505,7 @@ object Form1: TForm1
       '[jmp begin'
       ';.run'
     )
+    Options = [eoAutoIndent, eoBracketHighlight, eoGroupUndo, eoScrollPastEof, eoShowScrollHint, eoSmartTabs, eoTabsToSpaces, eoTrimTrailingSpaces]
     Options2 = [eoAlwaysVisibleCaret, eoFoldedCopyPaste, eoOverwriteBlock, eoAcceptDragDropEditing]
     MouseOptions = [emCtrlWheelZoom]
     VisibleSpecialChars = [vscSpace, vscTabAtLast]
@@ -513,16 +518,19 @@ object Form1: TForm1
     SelectedColor.UnderlinePriority = 50
     SelectedColor.StrikeOutPriority = 50
     BracketHighlightStyle = sbhsBoth
-    BracketMatchColor.Background = clNone
+    BracketMatchColor.Background = clYellow
     BracketMatchColor.Foreground = clNone
     BracketMatchColor.Style = [fsBold]
+    BracketMatchColor.BackPriority = 1
+    BracketMatchColor.BackAlpha = 50
     FoldedCodeColor.Background = clNone
     FoldedCodeColor.Foreground = clGray
     FoldedCodeColor.FrameColor = clGray
     MouseLinkColor.Background = clNone
     MouseLinkColor.Foreground = clBlue
-    LineHighlightColor.Background = clNone
+    LineHighlightColor.Background = clRed
     LineHighlightColor.Foreground = clNone
+    LineHighlightColor.BackAlpha = 40
     inline SynLeftGutterPartList1: TSynGutterPartList
       object SynGutterMarks1: TSynGutterMarks
         Width = 24
@@ -571,27 +579,27 @@ object Form1: TForm1
     Left = 781
     Height = 915
     Top = 0
-    Width = 955
+    Width = 513
     Align = alClient
     Caption = 'Panel1'
     ClientHeight = 915
-    ClientWidth = 955
+    ClientWidth = 513
     TabOrder = 2
     object Panel2: TPanel
       Left = 1
       Height = 410
       Top = 504
-      Width = 953
+      Width = 511
       Align = alBottom
       Caption = 'Panel2'
       ClientHeight = 410
-      ClientWidth = 953
+      ClientWidth = 511
       TabOrder = 0
       inline DeltaBasic: TSynEdit
         Left = 1
         Height = 408
         Top = 1
-        Width = 951
+        Width = 509
         Align = alClient
         Color = clBlack
         Font.Color = clWhite
@@ -603,6 +611,7 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 0
         Gutter.Color = clBlack
+        Gutter.Visible = False
         Gutter.Width = 81
         Gutter.MouseActions = <>
         RightGutter.Width = 0
@@ -1095,7 +1104,7 @@ object Form1: TForm1
       Left = 1
       Height = 5
       Top = 499
-      Width = 953
+      Width = 511
       Align = alBottom
       Color = clGreen
       ParentColor = False
@@ -1105,7 +1114,7 @@ object Form1: TForm1
       Left = 1
       Height = 498
       Top = 1
-      Width = 953
+      Width = 511
       Align = alClient
       Color = clBlack
       Font.Color = clWhite
@@ -1116,7 +1125,9 @@ object Form1: TForm1
       ParentColor = False
       ParentFont = False
       TabOrder = 2
+      OnMouseUp = BasicOutputMouseUp
       Gutter.Color = clBlack
+      Gutter.Visible = False
       Gutter.Width = 81
       Gutter.MouseActions = <>
       RightGutter.Width = 0
@@ -1613,7 +1624,7 @@ object Form1: TForm1
   object SynAnySyn1: TSynAnySyn
     Enabled = False
     CommentAttri.Foreground = clGray
-    Comments = [csAnsiStyle, csPasStyle, csCStyle, csAsmStyle, csBasStyle, csVBStyle]
+    Comments = []
     DetectPreprocessor = False
     IdentifierAttri.Foreground = clYellow
     IdentifierChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
@@ -1633,34 +1644,50 @@ object Form1: TForm1
     Top = 285
     object MenuItem2: TMenuItem
       Caption = '&File'
-      object MenuItem3: TMenuItem
+      OnClick = MenuItem2Click
+      object mnuNew: TMenuItem
         Caption = '&New'
-        OnClick = MenuItem3Click
+        OnClick = mnuNewClick
       end
-      object MenuItem4: TMenuItem
+      object mnuOpen: TMenuItem
         Caption = '&Open ...'
+        OnClick = mnuOpenClick
       end
-      object MenuItem5: TMenuItem
+      object mnuSave: TMenuItem
         Caption = '&Save'
+        ShortCut = 16467
+        OnClick = mnuSaveClick
       end
-      object MenuItem6: TMenuItem
+      object mnuSaveAs: TMenuItem
         Caption = 'Save &As'
-      end
-      object MenuItem7: TMenuItem
-        Caption = '-'
-      end
-      object MenuItem8: TMenuItem
-        Caption = '&Print'
-      end
-      object MenuItem9: TMenuItem
-        Caption = 'P&rint Setup ...'
+        ShortCut = 24659
+        OnClick = mnuSaveAsClick
       end
       object MenuItem10: TMenuItem
         Caption = '-'
       end
       object MenuItem11: TMenuItem
         Caption = 'E&xit'
+        OnClick = MenuItem11Click
       end
     end
+  end
+  object SaveDialog1: TSaveDialog
+    DefaultExt = '.vbBas'
+    Filter = 'IDE Basic Files (*.vbbas;*.gbbas)|*.vbbas;*.gbbas|Vision Basic BAS File (*.vbbas)|*.vbbas|General Basic File (*.gbbas)|*.gbbas|All Files (*.*)|*.*'
+    FilterIndex = 0
+    Options = [ofOverwritePrompt, ofNoValidate, ofPathMustExist, ofNoReadOnlyReturn, ofNoTestFileCreate, ofNoNetworkButton, ofNoDereferenceLinks, ofNoResolveLinks, ofEnableSizing]
+    Left = 572
+    Top = 537
+  end
+  object OpenDialog1: TOpenDialog
+    DefaultExt = '.vbBas'
+    Filter = 'IDE Basic Files (*.vbbas;*.gbbas)|*.vbbas;*.gbbas|Vision Basic BAS File (*.vbbas)|*.vbbas|General Basic File (*.gbbas)|*.gbbas|All Files (*.*)|*.*'
+    Left = 640
+    Top = 537
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 260
+    Top = 713
   end
 end

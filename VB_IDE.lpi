@@ -45,6 +45,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainForm"/>
       </Unit>
+      <Unit>
+        <Filename Value="simplesqlite3.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SimpleSQLite3"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -67,6 +72,11 @@
         </Win32>
       </Options>
     </Linking>
+    <Other>
+      <CompilerMessages>
+        <IgnoredMessages idx5062="True"/>
+      </CompilerMessages>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions>
@@ -81,6 +91,9 @@
       </Item>
       <Item>
         <Name Value="EReadError"/>
+      </Item>
+      <Item>
+        <Name Value="EConvertError"/>
       </Item>
     </Exceptions>
   </Debugging>

@@ -1,12 +1,13 @@
 unit MainForm;
 
 {$mode objfpc}{$H+}
-
+{$WARN 4056 off : Conversion between ordinals and pointers is not portable}
+{$WARN 4046 off : Constructing a class "$1" with abstract method "$2"}
 interface
 
 uses
   Classes, SysUtils, Math, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Clipbrd, Menus, SynHighlighterVB, SynEdit, SynHighlighterAny;
+  Clipbrd, Menus, SimpleSQLite3, SynHighlighterVB, SynEdit, SynHighlighterAny, shlobj, SynEditTypes, Types;
 
 type
 
@@ -18,31 +19,48 @@ type
     MenuItem10: TMenuItem;
     MenuItem11: TMenuItem;
     MenuItem2: TMenuItem;
-    MenuItem3: TMenuItem;
-    MenuItem4: TMenuItem;
-    MenuItem5: TMenuItem;
-    MenuItem6: TMenuItem;
-    MenuItem7: TMenuItem;
-    MenuItem8: TMenuItem;
-    MenuItem9: TMenuItem;
+    mnuNew: TMenuItem;
+    mnuOpen: TMenuItem;
+    mnuSave: TMenuItem;
+    mnuSaveAs: TMenuItem;
+    OpenDialog1: TOpenDialog;
     Panel1: TPanel;
     Panel2: TPanel;
+    PopupMenu1: TPopupMenu;
+    SaveDialog1: TSaveDialog;
     Splitter1: TSplitter;
     Splitter2: TSplitter;
     SynAnySyn1: TSynAnySyn;
     TheCode: TSynEdit;
     BasicOutput: TSynEdit;
     DeltaBasic: TSynEdit;
+
+
+
+      procedure BasicOutputMouseUp(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Integer);
     procedure FormCreate (Sender: TObject);
     procedure FormDestroy (Sender: TObject);
-    procedure MenuItem3Click (Sender: TObject);
+    procedure MenuItem11Click (Sender: TObject);
+    procedure MenuItem2Click (Sender: TObject);
+    procedure mnuNewClick (Sender: TObject);
+    procedure mnuOpenClick (Sender: TObject);
+    procedure mnuSaveClick (Sender: TObject);
+    procedure mnuSaveAsClick (Sender: TObject);
     procedure TheCodeChange (Sender: TObject);
     procedure TheCodeKeyDown (Sender: TObject; var Key: word; Shift: TShiftState);
+    procedure TheCodeKeyPress (Sender: TObject; var Key: char);
+
+    procedure TheCodeMouseUp (Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+
+    procedure TheCodeMouseWheel (Sender: TObject; Shift: TShiftState; WheelDelta: integer; MousePos: TPoint; var Handled: boolean);
   private
+    CodeVersions: TStringList;
     LastUpdate: TStringList;
+    GeneratedFrom: TStringList;
     function CreateLabels (Code: TStringList): string;
     procedure CorrectSource;
-
+    procedure FixBASICCase;
+    procedure UpdateBasicOutputPosition;
   public
 
   end;
@@ -56,12 +74,80 @@ implementation
 
 { TForm1 }
 
+uses SQLite3Conn, SQLDB;
+
 const
   CRLF = chr(13) + chr(10);
+
+var
+  db: TSQLite3Connection;
 
 function Clamp (inNum, inMin, inMax: integer): integer;
 begin
   Result := EnsureRange(inNum, inMin, inMax);
+end;
+
+procedure CreateSrcVersionTable;
+begin
+
+  DB.ExecuteDirect('drop table if exists SrcVersion');
+  DB.ExecuteDirect('CREATE TABLE SrcVersion (id INTEGER PRIMARY KEY AUTOINCREMENT,created_at DATETIME NOT NULL,source_code TEXT NOT NULL);');
+  DB.Transaction.Commit;
+end;
+
+procedure StoreSrcHist (SrcHist: TStringList);
+var
+  i: integer;
+  Query: TSQLQuery;
+  FormattedDateTime: string;
+  SourceCode: TStringList;
+begin
+  Query := TSQLQuery.Create(nil);
+  try
+    Query.SQLConnection := db;
+    Query.Transaction := DB.Transaction;
+    CreateSrcVersionTable;
+    for i := 0 to SrcHist.Count - 1 do begin
+      FormattedDateTime := SrcHist[i];
+      SourceCode := TStringList(SrcHist.Objects[i]);
+      Query.SQL.Text := 'INSERT INTO SrcVersion (created_at, source_code) VALUES (:created_at, :source_code);';
+      Query.Params.ParamByName('created_at').AsString := FormattedDateTime;
+      Query.Params.ParamByName('source_code').AsString := SourceCode.Text;
+      Query.ExecSQL;
+    end;
+  finally
+    DB.Transaction.Commit;
+    Query.Free;
+  end;
+end;
+
+procedure LoadSrcHist (var SrcHist: TStringList);
+var
+  i: integer;
+  Query: TSQLQuery;
+  SourceCode: TStringList;
+begin
+  for i := 0 to SrcHist.Count - 1 do begin
+    SourceCode := TStringList(SrcHist.Objects[i]);
+    SourceCode.Free;
+  end;
+  SrcHist.Clear;
+  Query := TSQLQuery.Create(nil);
+  try
+    Query.SQLConnection := db;
+    Query.Transaction := DB.Transaction;
+    Query.SQL.Text := 'SELECT created_at, source_code FROM SrcVersion;';
+    Query.Open;
+    while not Query.EOF do begin
+      SourceCode := TStringList.Create;
+      SourceCode.Text := Query.FieldByName('source_code').AsString;
+      SrcHist.AddObject(Query.FieldByName('created_at').AsString, SourceCode);
+      Query.Next;
+    end;
+  finally
+    DB.Transaction.Commit;
+    Query.Free;
+  end;
 end;
 
 procedure TForm1.FormCreate (Sender: TObject);
@@ -79,28 +165,111 @@ begin
   AppSize.Top := Mon.Top + (Mon.Height div 2 - AppSize.Height div 2);
   Form1.SetBounds(AppSize.Left, AppSize.Top, AppSize.Width, AppSize.Height);
   LastUpdate := TStringList.Create;
+  CodeVersions := TStringList.Create;
+
+  //OpenDB(':memory:', db);
+  OpenDB('r:\rodmover.vbas', db);
+  CreateSrcVersionTable;
+  GeneratedFrom:=TStringList.Create;
+end;
+
+procedure TForm1.BasicOutputMouseUp(Sender:TObject;Button:TMouseButton;Shift:TShiftState;X,Y:Integer);
+var
+    vs:string;
+    vi:integer;
+    r:integer;
+    cy:integer;
+    gv:string;
+begin
+  cy:=BasicOutput.CaretY;
+  vs:=inttostr(cy);
+  gv:=GeneratedFrom.Names[cy];
+  val(gv,vi,r);
+  if (vi>0)and(r=0) then
+    TheCode.CaretY:=vi;
 end;
 
 procedure TForm1.FormDestroy (Sender: TObject);
+var
+  x: integer;
 begin
-  LastUpdate.Clear;
+  LastUpdate.Free;
+  for x := 0 to CodeVersions.Count - 1 do begin
+    TStringList(CodeVersions.Objects[x]).Free;
+  end;
+  CodeVersions.Free;
+
+  CloseDB(db);
 end;
 
-procedure TForm1.MenuItem3Click (Sender: TObject);
+procedure TForm1.MenuItem11Click (Sender: TObject);
+begin
+  Form1.Close;
+end;
+
+procedure TForm1.MenuItem2Click (Sender: TObject);
+begin
+  mnuSave.Enabled := DB.DatabaseName <> ':memory:';
+end;
+
+procedure TForm1.mnuNewClick (Sender: TObject);
 begin
   LastUpdate.Clear;
   TheCode.Clear;
   TheCode.Modified := False;
   BasicOutput.Clear;
   DeltaBasic.Clear;
+  CloseDB(db);
+  OpenDB(':memory:', db);
 end;
+
+procedure TForm1.mnuOpenClick (Sender: TObject);
+var
+  semi: word;
+begin
+  if OpenDialog1.Execute then begin
+    OpenDialog1.InitialDir := ExtractFilePath(OpenDialog1.FileName);
+    CloseDB(db);
+    OpenDB(OpenDialog1.FileName, db);
+    LoadSrcHist(CodeVersions);
+    if (CodeVersions.Count > 0) then begin
+      TheCode.Text := TStringList(CodeVersions.Objects[CodeVersions.Count - 1]).Text;
+    end else begin
+      TheCode.Clear;
+    end;
+    semi := 186;
+    CorrectSource;
+    TheCodeKeyDown(nil, semi, [ssCtrl]);
+  end;
+end;
+
+procedure TForm1.mnuSaveClick (Sender: TObject);
+var
+  BasicVersion: TStringList;
+begin
+  BasicVersion := TStringList.Create;
+  BasicVersion.Text := TheCode.Text;
+  CodeVersions.AddObject(FormatDateTime('yyyy-mm-dd hh:nn:ss', Now), TObject(BasicVersion));
+  StoreSrcHist(CodeVersions);
+  TheCode.Modified := False;
+end;
+
+procedure TForm1.mnuSaveAsClick (Sender: TObject);
+begin
+  if SaveDialog1.Execute then begin
+    SaveDialog1.InitialDir := ExtractFilePath(SaveDialog1.FileName);
+    CloseDB(db);
+    OpenDB(SaveDialog1.FileName, db);
+    mnuSaveClick(nil);
+  end;
+end;
+
 
 procedure TForm1.TheCodeChange (Sender: TObject);
 var
   BasicCode: TStringList;
   CurrentLine: integer = 0;
   LineMult: integer = 10;
-  NextLineJump: integer;
   CommentMode: boolean = False;
   IncludeComments: boolean = False;
   x: integer;
@@ -128,6 +297,7 @@ IE:
 begin
   if TheCode.Modified then begin
     CorrectSource;
+    GeneratedFrom.Clear;
     TheCode.Modified := False;
     BasicCode := TStringList.Create;
     for x := 0 to TheCode.Lines.Count - 1 do begin
@@ -137,14 +307,14 @@ begin
         FirstWord := CurLine.Split(' ')[0];
         val(FirstWord, NewLine, r);
         if (r = 0) then begin
-          if (CurrentLine <= NewLine) then begin
-            CurrentLine := clamp(NewLine, CurrentLine, 65535);
+          if (CurrentLine - LineMult + 1 <= NewLine) then begin
+            CurrentLine := clamp(NewLine, CurrentLine - LineMult + 1, 65535);
             CurLine := trim(copy(CurLine, Length(IntToStr(CurrentLine)) + 1, maxlongint));
           end else begin
             // Needed this next line to trim the "bad" line number
             CurLine := trim(copy(CurLine, Length(IntToStr(CurrentLine)) + 1, maxlongint));
             if (LineMult > 2) then begin
-              BasicCode.Add('[VBCE-Line ' + (x + 1).ToString + '] Cannot set line number to below current line number.');//  Attempting to set line ' + NewLine.ToString + ' when current line is ' + CurrentLine.ToString);
+              //              BasicCode.Add('[VBCE-Line ' + (x + 1).ToString + '] Cannot set line number to below current line number.');//  Attempting to set line ' + NewLine.ToString + ' when current line is ' + CurrentLine.ToString);
             end;
           end;
         end;
@@ -188,13 +358,9 @@ begin
               // We've hit the 80 character limit per program line
               // Trim to 79 characters so we have room to hit ENTER on the line
               TempSt := TempSt.substring(0, 79);
-              // Add a comment stating the line is too long
-              if (linemult > 2) then begin
-                TempSt := TempSt + CRLF + IntToStr(currentline + 1) + ' rem previous line too long. expect errors. forced trim to 79 characters';
-              end;
-              //            console.log('[VBCE-Line ' + (i + 1) + '] String too long for V2 Basic.  Forced to 79 chars')
             end;
             BasicCode.Add(TempSt);
+            GeneratedFrom.Values[inttostr(x)]:=inttostr(BasicCode.Count-1);
             CurrentLine += linemult;
           end;
         end;
@@ -203,9 +369,11 @@ begin
     TopLine := BasicOutput.TopLine;
     BasicCode.Text := CreateLabels(BasicCode);
     BasicOutput.Text := BasicCode.Text + CRLF;
+    FixBASICCase;
     BasicOutput.TopLine := TopLine;
     BasicCode.Free;
   end;
+  UpdateBasicOutputPosition;
 end;
 
 
@@ -228,6 +396,17 @@ begin
   end;
 end;
 
+function SortLineNumbers (Item1, Item2: Pointer): integer;
+begin
+  if integer(Item1) < integer(Item2) then begin
+    Result := -1;
+  end else if integer(Item1) > integer(Item2) then begin
+    Result := 1;
+  end else begin
+    Result := 0;
+  end;
+end;
+
 function CompareListings (LineNumbers: TList; Listing1KeyValue, Listing2KeyValue: TStringList): TStringList;
 var
   i: integer;
@@ -235,6 +414,7 @@ var
   Line1, Line2: string;
 begin
   Result := TStringList.Create;
+  LineNumbers.Sort(@SortLineNumbers);
   for i := 0 to LineNumbers.Count - 1 do begin
     LineNumber := integer(LineNumbers[i]);
     Line1 := Listing1KeyValue.Values[IntToStr(LineNumber)];
@@ -277,15 +457,34 @@ begin
   end;
 end;
 
+function RepeatChar (c: string; Num: integer): string;
+var
+  x: integer;
+  s: string;
+begin
+  s := '';
+  for x := 1 to Num do begin
+    s := s + c;
+  end;
+  Result := s;
+end;
+
 procedure TForm1.TheCodeKeyDown (Sender: TObject; var Key: word; Shift: TShiftState);
 var
   Listing1, Listing2: TStringList;
   LineNumbers: TList;
   Listing1KeyValue, Listing2KeyValue: TStringList;
   DiffCode: TStringList;
-
+  ldb: TSQLite3Connection;
+  ltr: TSQLTransaction;
+  lqu: TSQLQuery;
 begin
-  if (ssCtrl in Shift) and (Key = 186) then begin // 186=Semicolon
+  if (ssAlt in Shift) and (not (ssCtrl in Shift)) and (Key = 186) then begin
+    TheCode.Lines.Insert(TheCode.CaretY - 1, ';' + RepeatChar('·', 40 - 7));
+    TheCode.Carety := TheCode.CaretY + 1;
+    TheCode.CaretX := 0;
+  end;
+  if (ssCtrl in Shift) and (not (ssAlt in Shift)) and (Key = 186) then begin // 186=Semicolon
     // Create the containing variables
     TheCode.Modified := True;
     TheCodeChange(nil);
@@ -309,6 +508,7 @@ begin
 
     // Run the difference check between the code
     DiffCode := CompareListings(LineNumbers, Listing1KeyValue, Listing2KeyValue);
+    DiffCode.Add('');
 
     // Put the difference on the UI (There's no saving of this code)
     DeltaBasic.Text := DiffCode.Text;
@@ -327,28 +527,90 @@ begin
 
 end;
 
+
+procedure TForm1.FixBASICCase;
+var
+  x, y: integer;
+  OrigLine: string;
+  InQuotes: boolean;
+  CurTop: integer;
+
+begin
+  // Go through and clean up the labels
+  BasicOutput.Lines.BeginUpdate; // Take care of screen jitter if we're moving screen content around
+  CurTop := BasicOutput.TopLine;   // Since we're manipulating content, need to remember where the top of the editor is that's showing
+
+  // Need to take into consideration the labels as well, so use the above to put the casing back
+  // Go through and convert basic code to lower case, taking into consideration quotes.
+  for x := 0 to BasicOutput.Lines.Count - 1 do begin
+    OrigLine := BasicOutput.Lines[x].Trim;
+    if OrigLine.Contains('"') then begin // Special considerations for lines with quotes and comments
+      InQuotes := False;
+      for y := 1 to Length(OrigLine) do begin
+        if not InQuotes then begin
+          OrigLine[y] := LowerCase(OrigLine[y]);
+        end;
+        if OrigLine[y] = '"' then begin
+          InQuotes := not InQuotes;
+        end;
+      end;
+    end else begin
+      // No quotes?  Convert it to lower case
+      OrigLine := OrigLine.ToLower;
+    end;
+    // Replace the code with the lower case
+    BasicOutput.Lines[x] := OrigLine;
+  end;
+
+  BasicOutput.TopLine := CurTop; // Reposition the top line
+  if y > 0 then begin
+    BasicOutput.SelStart := y;
+  end;     // Put the carret back in its place
+  BasicOutput.Lines.EndUpdate; // Let the refresh happen at its leisure
+end;
+
+procedure TForm1.UpdateBasicOutputPosition;
+var
+  PercCode: real;
+
+begin
+  if (TheCode.Focused) then begin
+    // How far down are we scrolled down in TheCode window?
+    PercCode := TheCode.TopLine / TheCode.Lines.Count;
+
+    // Set the top position of BasicOutput based on that
+    BasicOutput.TopLine := floor(BasicOutput.Lines.Count * PercCode);
+  end;
+
+end;
+
 procedure TForm1.CorrectSource;
 var
   x: integer;
   BasicLine: string;
   LabelName: string;
-  OL: string; // Original Line
+  OrigLine: string; // Original Line
 begin
+  // This routine removes any spaces from all labels between @ and :
+  // if the first character starts with an @ and there is a : on the line.
+  // We only make changes to the label definition.
+  // If the user puts a label in wrong later on, that's on them.
   for x := 0 to TheCode.Lines.Count - 1 do begin
     // Var to toy with
-    OL := TheCode.Lines[x].trim;
+    OrigLine := TheCode.Lines[x].trim;
 
     // Remove spaces from labels
     // Labels are considered only if they're the FIRST character
     // on the line of the SOURCE code, not COMPILED code
     if (TheCode.Lines[x].trim.StartsWith('@')) and (TheCode.Lines[x].Contains(':')) then begin
       // Obtain the full label name
-      LabelName := OL.Split(':')[0];
+      LabelName := OrigLine.Split(':')[0];
+
       // Rip out the spaces
       LabelName := LabelName.Replace(' ', '', [rfReplaceAll]);
 
       // Reconstruct the command
-      BasicLine := LabelName + copy(OL, pos(':', OL), MaxLongint);
+      BasicLine := LabelName + copy(OrigLine, pos(':', OrigLine), MaxLongint);
 
       // Drop it in
       TheCode.Lines[x] := BasicLine;
@@ -439,6 +701,21 @@ begin
   // Cleanup
   LabelsFound.Free;
 
+end;
+
+procedure TForm1.TheCodeKeyPress (Sender: TObject; var Key: char);
+begin
+  UpdateBasicOutputPosition;
+end;
+
+procedure TForm1.TheCodeMouseUp (Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+begin
+  UpdateBasicOutputPosition;
+end;
+
+procedure TForm1.TheCodeMouseWheel (Sender: TObject; Shift: TShiftState; WheelDelta: integer; MousePos: TPoint; var Handled: boolean);
+begin
+  UpdateBasicOutputPosition;
 end;
 
 initialization
